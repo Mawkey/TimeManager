@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using TimeManager.ViewModels;
 using Prism.Mvvm;
 using System.Collections.ObjectModel;
+using TimeManager.Tools.Interfaces;
 
 namespace TimeManager.Model
 {
-    public class DayEntry : BindableBase
+    public class DayEntry : BindableBase, IComparable<DayEntry>, IEquatable<DayEntry>, IHasDate
     {
         private int id;
         public int Id
@@ -40,6 +41,40 @@ namespace TimeManager.Model
         public string DateDayString
         {
             get => date.ToString("dddd");
+        }
+
+
+
+        // Interface implementations
+
+        public int CompareTo(DayEntry other)
+        {
+            return other == null ? 1 : Date.CompareTo(other.Date);
+        }
+
+        public bool Equals(DayEntry other)
+        {
+            return Date.Equals(other.date);
+        }
+
+        public static bool operator >(DayEntry dayEntry1, DayEntry dayEntry2)
+        {
+            return dayEntry1.CompareTo(dayEntry2) > 0;
+        }
+
+        public static bool operator <(DayEntry dayEntry1, DayEntry dayEntry2)
+        {
+            return dayEntry1.CompareTo(dayEntry2) < 0;
+        }
+
+        public static bool operator >=(DayEntry dayEntry1, DayEntry dayEntry2)
+        {
+            return dayEntry1.CompareTo(dayEntry2) >= 0;
+        }
+
+        public static bool operator <=(DayEntry dayEntry1, DayEntry dayEntry2)
+        {
+            return dayEntry1.CompareTo(dayEntry2) <= 0;
         }
     }
 }

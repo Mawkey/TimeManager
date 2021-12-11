@@ -18,42 +18,53 @@ namespace TimeManager.ViewModels
 {
     class MainContentViewModel : BindableBase
     {
+        // Fields
         private IDialogService dialogService;
         private AppDbContext dbCtx;
         private Paginator<DayEntry> paginator;
+        private ObservableCollection<PaginationLink> paginationLinks;
+        private ObservableCollection<DayEntry> dayEntries;
+        private DayEntry selectedDayEntry;
+        private DelegateCommand cmdEdit;
+        private DelegateCommand cmdAddDay;
+        private DelegateCommand cmdDeleteDay;
+        private DelegateCommand<int?> cmdOpenPage;
 
         public MainContentViewModel(IDialogService dialogService, AppDbContext dbCtx)
         {
             this.dbCtx = dbCtx;
             this.dbCtx.Database.EnsureCreated();
-            DayEntries.AddRange(dbCtx.GetDays(7));
             this.dialogService = dialogService;
-            paginator = new Paginator<DayEntry>(dbCtx, 7, 10);
-            paginator.SetCollection(x => x.DayEntries);
+            paginator = new Paginator<DayEntry>(dbCtx, 7, 10, x => x.DayEntries);
+            DayEntries.AddRange(paginator.Page(0));
+            UpdatePagination();
         }
 
-        private DayEntry selectedDayEntry;
+        // Properties
+        public DayEntry NewDayEntry { get; private set; }
         public DayEntry SelectedDayEntry
         {
             get => selectedDayEntry;
             set => SetProperty(ref selectedDayEntry, value);
         }
-
-        public DayEntry NewDayEntry { get; private set; }
-
-        private ObservableCollection<DayEntry> dayEntries;
+        public ObservableCollection<PaginationLink> PaginationLinks
+        {
+            get => paginationLinks ??= new ObservableCollection<PaginationLink>();
+            set => SetProperty(ref paginationLinks, value);
+        }
         public ObservableCollection<DayEntry> DayEntries
         {
             get => dayEntries ??= new ObservableCollection<DayEntry>();
             set => SetProperty(ref dayEntries, value);
         }
-
-        private DelegateCommand cmdEdit;
-        public DelegateCommand CmdEdit => cmdEdit ??= new DelegateCommand(Edit, () => { return SelectedDayEntry != null; }).ObservesProperty(() => SelectedDayEntry);
-        private DelegateCommand cmdAddDay;
+        public DelegateCommand CmdEdit => cmdEdit ??= new DelegateCommand(Edit, 
+            () => { return SelectedDayEntry != null; }).ObservesProperty(() => SelectedDayEntry);
         public DelegateCommand CmdAddDay => cmdAddDay ??= new DelegateCommand(AddDay);
-        private DelegateCommand cmdDeleteDay;
-        public DelegateCommand CmdDeleteDay => cmdDeleteDay ??= new DelegateCommand(DeleteDay, () => SelectedDayEntry != null).ObservesProperty(() => SelectedDayEntry);
+        public DelegateCommand CmdDeleteDay => cmdDeleteDay ??= new DelegateCommand(DeleteDay, 
+            () => SelectedDayEntry != null).ObservesProperty(() => SelectedDayEntry);
+        public DelegateCommand<int?> CmdOpenPage => cmdOpenPage ??= new DelegateCommand<int?>(x => OpenPage(x.GetValueOrDefault()));
+
+        // Methods
         void DeleteDay()
         {
             MessageBoxResult result = MessageBox.Show("Are you sure you want to delete this?\n" +
@@ -67,7 +78,6 @@ namespace TimeManager.ViewModels
                 UpdateList();
             }
         }
-
         private void AddDay()
         {
             DateTime currentDate = DateTime.Now;
@@ -91,7 +101,6 @@ namespace TimeManager.ViewModels
                     DayEntries.Add(newDay);
                     dbCtx.Add(newDay);
                     dbCtx.SaveChanges();
-                    DayEntries.Order();
                     UpdateList();
                 }
                 else if (dialog.Result == ButtonResult.Abort)
@@ -100,7 +109,6 @@ namespace TimeManager.ViewModels
                 }
             });
         }
-
         private void Edit()
         {
             DialogParameters parameters = new DialogParameters
@@ -120,9 +128,25 @@ namespace TimeManager.ViewModels
                 UpdateList();
             });
         }
+        private void OpenPage(int page)
+        {
+            DayEntries.Clear();
+            DayEntries.AddRange(paginator.Page(page));
+            UpdatePagination();
+        }
+
+        void UpdatePagination()
+        {
+            paginationLinks ??= new ObservableCollection<PaginationLink>();
+            paginationLinks.Clear();
+            paginationLinks.AddRange(paginator.GetPaginationLinks());
+        }
 
         void UpdateList()
         {
+            DayEntries.Clear();
+            DayEntries.AddRange(paginator.CurrentPage());
+            UpdatePagination();
         }
     }
 

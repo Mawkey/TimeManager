@@ -32,5 +32,11 @@ namespace TimeManager
             List<DayEntry> test = dbCtx.DayEntries.ToList();
             dbCtx.SaveChanges();
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.MinHeight = this.Height;
+            this.MinWidth = this.Width;
+        }
     }
 }

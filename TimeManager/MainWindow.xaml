@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:TimeManager"
         xmlns:prism="http://prismlibrary.com/"
         mc:Ignorable="d"
-        Title="Time Manager" SizeToContent="WidthAndHeight" Closing="Window_Closing">
+        Title="Time Manager" SizeToContent="WidthAndHeight" Closing="Window_Closing" Loaded="Window_Loaded">
     <Grid Margin="3">
         <ItemsControl prism:RegionManager.RegionName="MainContent"></ItemsControl>
     </Grid>
