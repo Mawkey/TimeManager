@@ -37,12 +37,12 @@
         <ItemsControl ItemsSource="{Binding Path=PaginationLinks}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal"></StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"></StackPanel>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Margin="5">
+                    <TextBlock Margin="10">
                         <Hyperlink
                             Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, 
                             Path=DataContext.CmdOpenPage}" 

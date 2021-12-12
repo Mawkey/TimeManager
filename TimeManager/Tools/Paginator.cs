@@ -18,6 +18,7 @@ namespace TimeManager.Tools
         int pageButtons;
         int currentPage;
         int maxPageButtons;
+        int pageNumberStartIndex;
 
         // TODO: Page numbers to be display needs to be dependent on what page your are on.
         // Currently it only displays 1 - 10 no matter what.
@@ -39,13 +40,17 @@ namespace TimeManager.Tools
 
         public IQueryable<TEntity> Page(int pageIndex)
         {
+            pageIndex = Math.Clamp(pageIndex, 0, int.MaxValue);
+            currentPage = pageIndex;
+            int startIndex = currentPage * pageSize;
+
             int totalCount = collection.Count();
             int pageCount = totalCount / pageSize;
             if (totalCount > pageCount * pageSize) pageCount++;
             pageButtons = Math.Clamp(pageCount, 1, maxPageButtons);
-            pageIndex = Math.Clamp(pageIndex, 0, int.MaxValue);
-            int startIndex = pageIndex * pageSize;
-            currentPage = pageIndex;
+            pageNumberStartIndex = Math.Clamp(currentPage - pageButtons / 2, 0, int.MaxValue);
+            int endOfPagesOffset = Math.Clamp(1 - pageNumberStartIndex, int.MinValue, 0);
+            pageButtons += endOfPagesOffset;
 
             return collection.OrderBy(x => x.Date)
                         .Reverse()
@@ -61,11 +66,10 @@ namespace TimeManager.Tools
         private int[] GetPageNumbers()
         {
             int[] pageNumbers = new int[pageButtons];
-            int startIndex = Math.Clamp(currentPage - pageButtons, 0, int.MaxValue);
 
             for (int i = 0; i < pageNumbers.Length; i++)
             {
-                pageNumbers[i] = startIndex + i;
+                pageNumbers[i] = pageNumberStartIndex + i;
             }
             return pageNumbers;
         }
